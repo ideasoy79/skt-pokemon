@@ -79,8 +79,9 @@
   .tll{margin-top:2px;font-size:12.5px;color:var(--muted);line-height:1.5}
 
   .steps{position:relative;padding-left:2px}
-  .step{position:relative;display:flex;gap:14px;padding-bottom:26px}
+  .step{position:relative;display:flex;gap:14px;padding-bottom:26px;scroll-margin-top:64px}
   .step:last-child{padding-bottom:0}
+  #danggol-section{scroll-margin-top:64px}
   .step .line{position:absolute;left:15px;top:34px;bottom:-2px;width:2px;
     background:var(--line)}
   .step:last-child .line{display:none}
@@ -123,15 +124,18 @@
     background:var(--surface);border-radius:10px;padding:9px 11px}
   .steptip b{color:var(--accent-dark);font-weight:800}
 
-  .accordion{margin-top:14px;background:var(--surface);border:1px solid var(--line);
-    border-radius:var(--radius);overflow:hidden}
+  .accordion{margin-top:14px;background:#fff;border:1.5px solid var(--accent);
+    border-radius:var(--radius);overflow:hidden;box-shadow:0 6px 18px rgba(75,47,209,.12)}
   .acchead{width:100%;display:flex;align-items:center;gap:10px;text-align:left;
-    background:none;border:0;padding:14px;cursor:pointer;font-family:inherit}
+    background:var(--accent-soft);border:0;padding:14px;cursor:pointer;font-family:inherit}
   .accheadtext{flex:1;min-width:0}
-  .acctitle{font-size:14px;font-weight:700;color:var(--text)}
+  .acctitle{font-size:14px;font-weight:800;color:var(--accent-dark)}
   .accsub{margin-top:3px;font-size:12px;color:var(--muted);line-height:1.5}
-  .acchead svg{flex:none;transition:transform .15s}
-  .acchead.open svg{transform:rotate(180deg)}
+  .acccta{flex:none;display:flex;align-items:center;gap:4px;font-size:12.5px;
+    font-weight:800;color:#fff;background:var(--accent);border-radius:999px;
+    padding:7px 10px 7px 13px;white-space:nowrap}
+  .acccta svg{transition:transform .15s}
+  .acchead.open .acccta svg{transform:rotate(180deg)}
   .accbody{padding:0 14px 16px}
   .accnote{margin:0 0 10px;font-size:12.5px;color:var(--muted);line-height:1.6}
   .storelist{display:flex;flex-direction:column;gap:8px}
@@ -667,7 +671,16 @@ function Hero() {
 function scrollToDanggol(ev) {
   if (ev && ev.preventDefault) ev.preventDefault();
   var el = document.getElementById('danggol-section');
-  if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!el) return;
+  var topbar = document.querySelector('.topbar');
+  var offset = (topbar ? topbar.offsetHeight : 52) + 12;
+  var rect = el.getBoundingClientRect();
+  var targetY = rect.top + window.pageYOffset - offset;
+  if (window.scrollTo) {
+    window.scrollTo({ top: targetY < 0 ? 0 : targetY, behavior: 'smooth' });
+  } else if (el.scrollIntoView) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function QuickActions() {
@@ -748,7 +761,7 @@ function DanggolAccordion() {
   var s = useState(false);
   var open = s[0], setOpen = s[1];
   var d = CONFIG.danggol;
-  return e('div', { className: 'accordion', id: 'danggol-section' },
+  return e('div', { className: 'accordion' },
     e('button', {
       type: 'button',
       className: 'acchead' + (open ? ' open' : ''),
@@ -758,7 +771,7 @@ function DanggolAccordion() {
         e('div', { className: 'acctitle' }, '단골 등록하고 카드 빠르게 받기'),
         e('div', { className: 'accsub' }, d.intro)
       ),
-      e(Chevron, null)
+      e('span', { className: 'acccta' }, open ? '접기' : '매장 선택', e(Chevron, null))
     ),
     open ? e('div', { className: 'accbody' },
       e('p', { className: 'accnote' }, d.hint),
@@ -787,7 +800,7 @@ function DanggolAccordion() {
 
 function Step(props) {
   var s = props.data;
-  return e('div', { className: 'step' },
+  return e('div', { className: 'step', id: s.danggol ? 'danggol-section' : null },
     e('div', { className: 'line' }),
     e('div', { className: 'num' }, s.num),
     e('div', { className: 'stepbody' },
